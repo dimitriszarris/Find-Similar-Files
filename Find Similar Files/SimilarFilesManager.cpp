@@ -22,10 +22,10 @@ vector<wstring> CSimilarFilesManager::SearchDuplicateFiles(wstring folder)
 			wstring delimiter = L":";
 			if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 			{
-				//__raise show_current_folder_event(folder);
 				map<wstring, vector<FILE_PATH_ATTRIBUTES>>::iterator iter;
 				if ((iter = _mapFilesAttributes.find(fd.cFileName + delimiter + to_wstring(fd.nFileSizeLow))) != _mapFilesAttributes.end())
 				{
+					_mutexDuplicates.lock();
 					FILE_PATH_ATTRIBUTES fpa;
 					fpa.nFileSize = fd.nFileSizeLow;
 					_nDiskSpaceOccupied += fd.nFileSizeLow;
@@ -33,6 +33,7 @@ vector<wstring> CSimilarFilesManager::SearchDuplicateFiles(wstring folder)
 					_vDuplicates.push_back(fd.cFileName + delimiter + to_wstring(fd.nFileSizeLow));
 					iter = _mapFilesAttributes.find(fd.cFileName + delimiter + to_wstring(fd.nFileSizeLow));
 					iter->second.push_back(fpa);
+					_mutexDuplicates.unlock();
 				}
 				else
 				{
@@ -52,6 +53,7 @@ vector<wstring> CSimilarFilesManager::SearchDuplicateFiles(wstring folder)
 		} while (::FindNextFile(hFind, &fd));
 		::FindClose(hFind);
 	}
+
 
 	return _vDuplicates;
 }

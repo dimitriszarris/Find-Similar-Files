@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <thread>
+#include <mutex>
 
 namespace SimilarFiles
 {
@@ -26,6 +27,8 @@ namespace SimilarFiles
 		unsigned __int64 _nDiskSpaceOccupied;
 
 		std::thread _thread;
+		std::mutex _mutexDuplicates;
+		std::mutex _mutexFiles;
 
 	public:
 
@@ -33,7 +36,10 @@ namespace SimilarFiles
 		void Clear();
 
 		MapFileAttributes GetMapFilesAttributes() const { return _mapFilesAttributes; }
-		VectorFiles GetVDuplicates() const { return _vDuplicates; }
+		VectorFiles GetVDuplicates() const {
+			_mutexDuplicates.lock();
+			return _vDuplicates;
+		}
 
 		void GetFileInfo(std::wstring strFileSize, std::wstring &filename, std::wstring &filesize);
 		VectorFiles GetFilePaths(std::wstring strFileSize);
